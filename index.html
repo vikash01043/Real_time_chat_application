@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real time chat aap</title>
+    <style>
+        .logo {
+            display: block;
+            margin: auto;
+            width: 50px;
+            height: 50px;
+        }
+
+        .container {
+            max-width: 955px;
+            background-color: red;
+            margin: auto;
+            height: 60vh;
+            overflow-y: auto;
+            margin-bottom: 23px;
+        }
+
+        .message {
+            background-color: grey;
+            width: 24%;
+            padding: 10px;
+            margin: 17px 12px;
+            border: 2px solid black;
+            border-radius: 10px;
+        }
+
+        .left {
+            float: left;
+            clear: both;
+        }
+
+        .right {
+            float: right;
+            clear: both;
+        }
+
+        #send-container {
+            display: block;
+            margin: auto;
+            text-align: center;
+            max-width: 985px;
+            width: 100%;
+        }
+
+        #messageinp {
+            width: 92%;
+            border: 2px solid black;
+            border-radius: 6px;
+            height: 34px;
+        }
+
+        body {
+            height: 100vh;
+            background-image: linear-gradient(rgb(255, 255, 255), rgb(109, 39, 239));
+        }
+    </style>
+
+</head>
+<body>
+    <nav>
+        <img class="logo"  src="logo.jpg" alt="">
+    </nav>
+    <div class="container">
+        <!-- <div class="message right"> VIkash :hey how are you?</div>
+        <div class="message left"> Hiten: i am fine.what about you? </div> -->
+    </div>
+    <div class="send">
+        <form action=" " id="send-container">
+            <input type="text" name="messageinp" id="messageinp">
+            <button class="btn" type="submit">Send</button>
+        </form>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io('http://localhost:3500');
+        const form = document.getElementById('send-container');
+        const messageInput = document.getElementById('messageinp');
+        const messageContainer = document.querySelector(".container");
+        const append = (message, position) => {
+            const messageElement = document.createElement('div');
+            messageElement.innerText = message;
+            messageElement.classList.add('message');
+            messageElement.classList.add(position);
+            messageContainer.append(messageElement);
+        }
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const message = messageInput.value;
+            append(`You:${message}`, 'right');
+            socket.emit('send', message);
+            messageInput.value = "";
+        })
+
+        const name = prompt("Enter your name")
+        socket.emit('new-user-joined', name);
+
+        socket.on('user-joined', name => {
+            append(`${name} joined the chat`, 'right')
+        })
+        socket.on('receive', data => {
+            append(`${data.name}:${data.message} `, 'left')
+        })
+        socket.on('left', data => {
+            append(`${data.name} left the chat  `, 'left')
+        })
+    </script>
+</body>
+
+</html>
